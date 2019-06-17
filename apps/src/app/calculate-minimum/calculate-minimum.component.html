@@ -1,9 +1,10 @@
-<form class="calculate-minimum-form">
+<form [formGroup]="formService.formGroup" class="calculate-minimum-form">
   <mat-form-field class="calculate-minimum-full-width">
-    <input matInput placeholder="Please input nominal rupiah">
+    <input
+      [formControl]="formService.formGroup.nominal"
+      matInput
+      placeholder="Please input nominal rupiah">
     <mat-hint>ex: Rp120.000</mat-hint>
-    <mat-error *ngIf="emailFormControl.hasError('email') && !emailFormControl.hasError('required')">
-      Please enter a valid email address
-    </mat-error>
+    
   </mat-form-field>
 </form>
