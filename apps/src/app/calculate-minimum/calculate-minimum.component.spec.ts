@@ -40,14 +40,14 @@ describe('CalculateMinimumComponent', () => {
     }));
 
     it('should input nominal', async(() => {
-      formsService.onParsingResultCalculateMinimum().subscribe((resultInput: string | number) => {
+      formsService.ParsingCalculateMinimum().subscribe((resultInput: string | number) => {
         expect(resultInput).toEqual(100000);
       });
       formsService.formGroup.controls.nominal.setValue(100000);
     }));
 
     it('should input nominal string or number', async(() => {
-      formsService.onParsingResultCalculateMinimum().subscribe((resultInput: string | number) => {
+      formsService.ParsingCalculateMinimum().subscribe((resultInput: string | number) => {
         if (typeof resultInput === 'string') {
           expect(typeof resultInput).toEqual('string');
           return;
@@ -61,5 +61,6 @@ describe('CalculateMinimumComponent', () => {
       });
       formsService.formGroup.controls.nominal.setValue(10000);
     }));
+
   });
 });

@@ -1,10 +1,11 @@
-<form [formGroup]="formService.formGroup" class="calculate-minimum-form">
+<form [formGroup]="formGroup" class="calculate-minimum-form">
   <mat-form-field class="calculate-minimum-full-width">
     <input
-      [formControl]="formService.formGroup.nominal"
+      formControlName="nominal"
+      (keyup)="onEnter($event, formGroup.controls.nominal.value)"
       matInput
       placeholder="Please input nominal rupiah">
-    <mat-hint>ex: Rp120.000</mat-hint>
+    <mat-hint>e.g Rp 500 {{tmp}}</mat-hint>
     
   </mat-form-field>
 </form>
