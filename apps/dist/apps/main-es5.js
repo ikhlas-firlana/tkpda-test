@@ -41,7 +41,7 @@ module.exports = "<router-outlet></router-outlet>\n"
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<form [formGroup]=\"formService.formGroup\" class=\"calculate-minimum-form\">\n  <mat-form-field class=\"calculate-minimum-full-width\">\n    <input\n      [formControl]=\"formService.formGroup.nominal\"\n      matInput\n      placeholder=\"Please input nominal rupiah\">\n    <mat-hint>ex: Rp120.000</mat-hint>\n    \n  </mat-form-field>\n</form>\n"
+module.exports = "<form [formGroup]=\"formGroup\" class=\"calculate-minimum-form\">\n  <mat-form-field class=\"calculate-minimum-full-width\">\n    <input\n      formControlName=\"nominal\"\n      (keyup)=\"onEnter($event, formGroup.controls.nominal.value)\"\n      matInput\n      placeholder=\"Please input nominal rupiah\">\n    <mat-hint>e.g Rp 500</mat-hint>\n  </mat-form-field>\n\n  <mat-form-field>\n    <input\n      [(ngModel)]=\"tmp\"\n      [ngModelOptions]=\"{standalone: true}\"\n      matInput\n      placeholder=\"Result\">\n  </mat-form-field>\n</form>\n"
 
 /***/ }),
 
@@ -215,13 +215,22 @@ __webpack_require__.r(__webpack_exports__);
 var CalculateMinimumComponent = /** @class */ (function () {
     function CalculateMinimumComponent(formService) {
         this.formService = formService;
+        this.formGroup = this.formService.formGroup;
     }
     CalculateMinimumComponent.prototype.ngOnInit = function () {
-        this.subcriber = this.formService.onParsingResultCalculateMinimum().subscribe();
+        this.formService.ParsingCalculateMinimum().subscribe(function (resultParsing) {
+            console.log(resultParsing);
+        });
     };
-    CalculateMinimumComponent.prototype.ngOnDestroy = function () {
-        if (this.subcriber) {
-            this.subcriber.unsubscribe();
+    CalculateMinimumComponent.prototype.ngOnDestroy = function () { };
+    CalculateMinimumComponent.prototype.onEnter = function (event) {
+        if (event.keyCode === 13 && this.formService.error !== null) {
+            this.tmp = this.formService.error;
+            return;
+        }
+        if (event.keyCode === 13) {
+            this.tmp = this.formService.holdResultParsing;
+            return;
         }
     };
     CalculateMinimumComponent = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
@@ -243,28 +252,177 @@ var CalculateMinimumComponent = /** @class */ (function () {
 /*!****************************************************!*\
   !*** ./src/app/calculate-minimum/forms.service.ts ***!
   \****************************************************/
-/*! exports provided: FormsService */
+/*! exports provided: FormsService, TypeRupiah */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FormsService", function() { return FormsService; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TypeRupiah", function() { return TypeRupiah; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
 /* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/forms */ "./node_modules/@angular/forms/fesm5/forms.js");
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm5/index.js");
+/* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! rxjs/operators */ "./node_modules/rxjs/_esm5/operators/index.js");
+
+
 
 
 
 var FormsService = /** @class */ (function () {
     function FormsService() {
+        this.collectionRupiah = [
+            {
+                nominal: 100000,
+                title: 'Rp100000',
+            },
+            {
+                nominal: 50000,
+                title: 'Rp50000',
+            },
+            {
+                nominal: 20000,
+                title: 'Rp20000',
+            },
+            {
+                nominal: 10000,
+                title: 'Rp10000',
+            },
+            {
+                nominal: 5000,
+                title: 'Rp5000',
+            },
+            {
+                nominal: 2000,
+                title: 'Rp2000',
+            },
+            {
+                nominal: 1000,
+                title: 'Rp1000',
+            },
+            {
+                nominal: 500,
+                title: 'Rp500',
+            },
+            {
+                nominal: 100,
+                title: 'Rp100',
+            },
+            {
+                nominal: 50,
+                title: 'Rp50',
+            },
+        ];
+        this.remains = null;
+        this.holdResultParsing = null;
+        this.error = null;
         this.formGroup = new _angular_forms__WEBPACK_IMPORTED_MODULE_2__["FormGroup"]({
-            nominal: new _angular_forms__WEBPACK_IMPORTED_MODULE_2__["FormControl"]([
+            nominal: new _angular_forms__WEBPACK_IMPORTED_MODULE_2__["FormControl"]('', [
                 _angular_forms__WEBPACK_IMPORTED_MODULE_2__["Validators"].required,
             ]),
         });
     }
-    FormsService.prototype.onParsingResultCalculateMinimum = function () {
-        return this.formGroup.controls.nominal.valueChanges;
+    FormsService.prototype.ParsingCalculateMinimum = function () {
+        var _this = this;
+        return this.formGroup.controls.nominal.valueChanges
+            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["flatMap"])(function (resultChange) {
+            _this.error = null;
+            var modifResult = _this.filterConditionRupiah(resultChange);
+            if (modifResult) {
+                return Object(rxjs__WEBPACK_IMPORTED_MODULE_3__["of"])(modifResult);
+            }
+            _this.error = 'invalid option';
+            return resultChange;
+        }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["flatMap"])(function (resultChange) {
+            var collectionRupiahWithCount = _this.collectionRupiah.map(function (value) {
+                value.count = 0;
+                return value;
+            });
+            collectionRupiahWithCount = _this.calculateCount(collectionRupiahWithCount, resultChange);
+            _this.holdResultParsing = _this.forceSetCalculateMinimumToString(collectionRupiahWithCount);
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_3__["of"])(collectionRupiahWithCount);
+        }));
+    };
+    FormsService.prototype.forceSetCalculateMinimumToString = function (objectTypeRupiah) {
+        var result = objectTypeRupiah.map(function (value) {
+            var forceSet = value.count + 'x ' + value.title;
+            return forceSet;
+        }).join(', ');
+        if (this.remains) {
+            result += ',left ' + this.remains.title;
+        }
+        return result;
+    };
+    FormsService.prototype.calculateCount = function (objectRupiah, dividen) {
+        objectRupiah = objectRupiah
+            .filter(function (value) {
+            return dividen / value.nominal > 1;
+        }).map(function (value) {
+            value.count = Math.floor(dividen / value.nominal);
+            if (value.count > 0) {
+                dividen = Math.floor(dividen % value.nominal);
+            }
+            console.log('>', value);
+            return value;
+        }).filter(function (value) {
+            return value.count > 0;
+        });
+        this.remains = null;
+        if (dividen > 0) {
+            this.remains = {
+                nominal: dividen,
+                title: 'Rp' + dividen,
+            };
+        }
+        return objectRupiah;
+    };
+    FormsService.prototype.filterConditionRupiah = function (inputParameter) {
+        var resultClean = null;
+        var result = null;
+        if (typeof inputParameter === 'string') {
+            var resultCleanWithoutDot = inputParameter.replace(/\./g, '');
+            resultClean = resultCleanWithoutDot;
+            if (resultClean.indexOf('Rp') > 0 && resultClean.split('Rp').length > 1) {
+                return null;
+            }
+            if (resultClean.indexOf(',00') > -1) {
+                if (resultClean.indexOf(',00') !== (resultClean.length - 3)) {
+                    return null;
+                }
+                var resultCleanExtraZero = resultClean.replace(',00', '');
+                resultClean = resultCleanExtraZero;
+            }
+            if (resultClean.search(',') > -1) {
+                return null;
+            }
+            if (resultClean.split('Rp').length > 0) {
+                var resultCleanWithoutRp = resultClean.split('Rp').filter(function (value) {
+                    return value !== 'Rp';
+                }).join('');
+                resultClean = resultCleanWithoutRp;
+            }
+            var isInvalidSeperator_1 = true;
+            var resultCleanWithoutSpaceSeparator = resultClean.split('').filter(function (value, index) {
+                if (value === ' ') {
+                    isInvalidSeperator_1 = index > 0 ? false : true;
+                    return false;
+                }
+                if (value === ',') {
+                    isInvalidSeperator_1 = false;
+                    return false;
+                }
+                return true;
+            }).join('');
+            resultClean = resultCleanWithoutSpaceSeparator;
+            if (!isInvalidSeperator_1 || resultClean.length === 0) {
+                return null;
+            }
+            result = typeof resultClean === 'string' ? parseInt(resultClean, null) : resultClean;
+        }
+        if (typeof inputParameter === 'number') {
+            result = Math.floor(inputParameter);
+        }
+        return result;
     };
     FormsService = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])({
@@ -273,6 +431,12 @@ var FormsService = /** @class */ (function () {
         tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [])
     ], FormsService);
     return FormsService;
+}());
+
+var TypeRupiah = /** @class */ (function () {
+    function TypeRupiah() {
+    }
+    return TypeRupiah;
 }());
 
 
