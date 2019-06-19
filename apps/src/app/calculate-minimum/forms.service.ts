@@ -51,6 +51,7 @@ export class FormsService {
   ];
   remains: TypeRupiah = null;
   holdResultParsing: string = null;
+  error: any = null;
   formGroup: FormGroup;
 
   constructor() {
@@ -63,7 +64,17 @@ export class FormsService {
 
   ParsingCalculateMinimum(): Observable<TypeRupiah[]> {
 
-    return this.formGroup.controls.nominal.valueChanges.pipe(
+    return this.formGroup.controls.nominal.valueChanges
+    .pipe(
+      flatMap((resultChange: any) => {
+        this.error = null;
+        const modifResult = this.filterConditionRupiah(resultChange);
+        if (modifResult) {
+          return of(modifResult);
+        }
+        this.error = 'invalid option';
+        return resultChange;
+      }),
       flatMap((resultChange: any) => {
         let collectionRupiahWithCount: TypeRupiah[] = this.collectionRupiah.map((value: any) => {
           value.count = 0;

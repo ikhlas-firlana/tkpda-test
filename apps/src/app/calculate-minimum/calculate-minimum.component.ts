@@ -27,8 +27,13 @@ export class CalculateMinimumComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {}
 
   onEnter(event: any): void {
+    if (event.keyCode === 13 && this.formService.error !== null) {
+      this.tmp = this.formService.error;
+      return;
+    }
     if (event.keyCode === 13) {
       this.tmp = this.formService.holdResultParsing;
+      return;
     }
   }
 }
