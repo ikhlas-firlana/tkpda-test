@@ -21,18 +21,36 @@ describe('FormsService', () => {
     const result = service.filterConditionRupiah('Rp17500');
     expect(result).toEqual(17500);
   });
-  it('should be 17500 from Rp17.500,00', () => {});
-  it('should be 120325 from Rp 120.325', () => {});
-  it('should be 5000 from 005.000', () => {});
+  it('should be 17500 from Rp17.500,00', () => {
+    const result = service.filterConditionRupiah('Rp17.500,00');
+    expect(result).toEqual(17500);
+  });
+  it('should be 120325 from Rp 120.325', () => {
+    const result = service.filterConditionRupiah('Rp 120.325');
+    expect(result).toEqual(120325);
+  });
+  it('should be 5000 from 005.000', () => {
+    const result = service.filterConditionRupiah('005.000');
+    expect(result).toEqual(5000);
+  });
   it('should be 1000 from 001000', () => {
     const result = service.filterConditionRupiah('001000');
     expect(result).toEqual(1000);
   });
-  it('should be invalid 17,500 invalid separator', () => {});
-  it('should be 2 500 invalid separator', () => {});
+  it('should be invalid 17,500 invalid separator', () => {
+    const result = service.filterConditionRupiah('17,500');
+    expect(result).toEqual(null);
+  });
+  it('should be 2 500 invalid separator', () => {
+    const result = service.filterConditionRupiah('2 500');
+    expect(result).toEqual(null);
+  });
   it('should be 3000 Rp valid character in wrong position', () => {
     const result = service.filterConditionRupiah('3000 Rp');
     expect(result).toEqual(null);
   });
-  it('should be Rp missing value', () => {});
+  it('should be Rp missing value', () => {
+    const result = service.filterConditionRupiah('Rp');
+    expect(result).toEqual(null);
+  });
 });

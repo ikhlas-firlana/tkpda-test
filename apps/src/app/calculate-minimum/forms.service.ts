@@ -111,29 +111,58 @@ export class FormsService {
     return objectRupiah;
   }
   filterConditionRupiah(inputParameter: string | number): number {
-    let resultClean = null;
+    let resultClean: string = null;
+    let result: number = null;
     if (typeof inputParameter === 'string') {
-      resultClean = inputParameter.replace(/\./g, '');
-      resultClean = resultClean.split('').filter((value) => {
+
+      const resultCleanWithoutDot = inputParameter.replace(/\./g, '');
+      resultClean = resultCleanWithoutDot;
+
+      if (resultClean.indexOf('Rp') > 0 && resultClean.split('Rp').length > 1) {
+        return null;
+      }
+
+      if (resultClean.indexOf(',00') > -1) {
+        if (resultClean.indexOf(',00') !== (resultClean.length - 3)) {
+          return null;
+        }
+        const resultCleanExtraZero = resultClean.replace(',00', '');
+        resultClean = resultCleanExtraZero;
+      }
+      if (resultClean.search(',') > -1) {
+        return null;
+      }
+
+      if (resultClean.split('Rp').length > 0) {
+        const resultCleanWithoutRp = resultClean.split('Rp').filter((value: any) => {
+          return value !== 'Rp';
+        }).join('');
+        resultClean = resultCleanWithoutRp;
+      }
+
+      let isInvalidSeperator = true;
+      const resultCleanWithoutSpaceSeparator = resultClean.split('').filter((value, index) => {
         if (value === ' ') {
+          isInvalidSeperator = index > 0 ? false : true;
+          return false;
+        }
+        if (value === ',') {
+          isInvalidSeperator = false;
           return false;
         }
         return true;
       }).join('');
-      if (resultClean.indexOf('Rp') > 0) {
+
+      resultClean = resultCleanWithoutSpaceSeparator;
+      if (!isInvalidSeperator || resultClean.length === 0) {
         return null;
       }
-      if (resultClean.split('Rp').length > 0) {
-        resultClean = resultClean.split('Rp').filter((value: any) => {
-          return value !== 'Rp';
-        }).join('');
-      }
-      resultClean = typeof resultClean === 'string' ? parseInt(resultClean, null) : resultClean;
+      result = typeof resultClean === 'string' ? parseInt(resultClean, null) : resultClean;
     }
     if (typeof inputParameter === 'number') {
-      resultClean = Math.floor(inputParameter);
+      result = Math.floor(inputParameter);
     }
-    return resultClean;
+    return result;
   }
 }
 
