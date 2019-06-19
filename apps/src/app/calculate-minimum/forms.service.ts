@@ -114,15 +114,20 @@ export class FormsService {
     let resultClean = null;
     if (typeof inputParameter === 'string') {
       resultClean = inputParameter.replace(/\./g, '');
+      resultClean = resultClean.split('').filter((value) => {
+        if (value === ' ') {
+          return false;
+        }
+        return true;
+      }).join('');
+      if (resultClean.indexOf('Rp') > 0) {
+        return null;
+      }
       if (resultClean.split('Rp').length > 0) {
         resultClean = resultClean.split('Rp').filter((value: any) => {
           return value !== 'Rp';
         }).join('');
       }
-      resultClean = resultClean.filter((value: string) => {
-        // set logic here
-        return true;
-      });
       resultClean = typeof resultClean === 'string' ? parseInt(resultClean, null) : resultClean;
     }
     if (typeof inputParameter === 'number') {
