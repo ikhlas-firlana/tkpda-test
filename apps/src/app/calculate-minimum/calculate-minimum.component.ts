@@ -18,13 +18,17 @@ export class CalculateMinimumComponent implements OnInit, OnDestroy {
     this.formGroup = this.formService.formGroup;
    }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.formService.ParsingCalculateMinimum().subscribe((resultParsing: any) => {
+      console.log(resultParsing);
+    });
+  }
 
   ngOnDestroy(): void {}
 
   onEnter(event: any): void {
     if (event.keyCode === 13) {
-      this.tmp = this.formGroup.controls.nominal.value;
+      this.tmp = this.formService.holdResultParsing;
     }
   }
 }

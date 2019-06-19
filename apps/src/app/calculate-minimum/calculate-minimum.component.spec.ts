@@ -5,7 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { FormsService } from './forms.service';
+import { FormsService, TypeRupiah } from './forms.service';
 
 describe('CalculateMinimumComponent', () => {
   // let fixture: ComponentFixture<CalculateMinimumComponent>;
@@ -40,20 +40,21 @@ describe('CalculateMinimumComponent', () => {
     }));
 
     it('should input nominal', async(() => {
-      formsService.ParsingCalculateMinimum().subscribe((resultInput: string | number) => {
+      formsService.formGroup.controls.nominal.valueChanges.subscribe((resultInput: string | number) => {
         expect(resultInput).toEqual(100000);
       });
       formsService.formGroup.controls.nominal.setValue(100000);
     }));
 
     it('should input nominal string or number', async(() => {
-      formsService.ParsingCalculateMinimum().subscribe((resultInput: string | number) => {
-        if (typeof resultInput === 'string') {
-          expect(typeof resultInput).toEqual('string');
+      formsService.ParsingCalculateMinimum().subscribe((resultInput: TypeRupiah[]) => {
+        const resultForceSet = formsService.forceSetCalculateMinimumToString(resultInput);
+        if (typeof resultForceSet === 'string') {
+          expect(typeof resultForceSet).toEqual('string');
           return;
         }
-        if (typeof resultInput === 'number') {
-          expect(typeof resultInput).toEqual('number');
+        if (typeof resultForceSet === 'number') {
+          expect(typeof resultForceSet).toEqual('number');
           return;
         }
         expect('string number').toContain(typeof resultInput);

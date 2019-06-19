@@ -30,7 +30,7 @@ export class FormsService {
     },
     {
       nominal: 2000,
-      title: 'Rp1000',
+      title: 'Rp2000',
     },
     {
       nominal: 1000,
@@ -49,7 +49,8 @@ export class FormsService {
       title: 'Rp50',
     },
   ];
-
+  remains: TypeRupiah = null;
+  holdResultParsing: string = null;
   formGroup: FormGroup;
 
   constructor() {
@@ -60,48 +61,75 @@ export class FormsService {
     });
   }
 
-  ParsingCalculateMinimum(): Observable<string> {
-    const collectionRupiahWithCount: TypeRupiah[] = this.collectionRupiah.map((value: any) => {
-      value.count = 0;
-      return value;
-    });
+  ParsingCalculateMinimum(): Observable<TypeRupiah[]> {
+
     return this.formGroup.controls.nominal.valueChanges.pipe(
       flatMap((resultChange: any) => {
-        return of(resultChange);
+        let collectionRupiahWithCount: TypeRupiah[] = this.collectionRupiah.map((value: any) => {
+          value.count = 0;
+          return value;
+        });
+        collectionRupiahWithCount = this.calculateCount(collectionRupiahWithCount, resultChange);
+        this.holdResultParsing = this.forceSetCalculateMinimumToString(collectionRupiahWithCount);
+        return of(collectionRupiahWithCount);
       })
     );
   }
-  // Case 1
-  // 15000 check -> 10000, 5000, 2000, 1000, 500, 100, 50
-  // 15000 / 10000 = 1
-  // count = 1
-  // 15000 mod 10000 = 5000
-  // 5000 / 5000 = 1
-  // count = 1
+  forceSetCalculateMinimumToString(objectTypeRupiah: TypeRupiah[]): string {
+    let result = objectTypeRupiah.map((value: TypeRupiah) => {
+      const forceSet: any = value.count + 'x ' + value.title;
+      return forceSet;
+    }).join(', ');
+    if (this.remains) {
+      result += ',left ' + this.remains.title;
+    }
+    return result;
+  }
 
-  // Case 2
-  // 3900 check -> 2000, 1000, 500, 100, 50
-  // 3900 / 2000 = 1
-  // 3900 mod 2000 = 1900
-  // 1900 / 1000 = 1
-  // 1900 mod 1000 = 900
-  // 900 / 500 = 1
-  // 900 mod 500 = 400
-  // 400 / 100 = 4
-  // 400 mod 100 = 0;
+  calculateCount(objectRupiah: TypeRupiah[], dividen: number): TypeRupiah[] {
+    objectRupiah = objectRupiah
+    .filter((value: TypeRupiah) => {
+      return dividen / value.nominal > 1;
+    }).map((value: TypeRupiah) => {
+      value.count = Math.floor(dividen / value.nominal);
+      if (value.count > 0) {
+        dividen = Math.floor(dividen % value.nominal);
+      }
+      console.log('>', value);
+      return value;
+    }).filter((value: TypeRupiah) => {
+      return value.count > 0;
+    });
+    this.remains = null;
+    if (dividen > 0) {
+      this.remains = {
+        nominal: dividen,
+        title: 'Rp' + dividen,
+      };
+    }
 
-  // Case 3
-  // 12510 check -> 10000, 5000, 2000, 1000, 500, 100, 50
-  // 12510 / 10000 = 1
-  // 12510 mod 10000 = 2510
-  // 2510 / 5000 = 0 -> next
-  // 2510 / 2000 = 1
-  // 2510 mod 2000 = 510
-  // 510 / 1000 = 0 -> next
-  // 510 / 500 = 1
-  // 510 mod 500 = 10
-  // 10 / 100 = 0 -> next
-  // 10 / 50 = 0 -> next
+    return objectRupiah;
+  }
+  filterConditionRupiah(inputParameter: string | number): number {
+    let resultClean = null;
+    if (typeof inputParameter === 'string') {
+      resultClean = inputParameter.replace(/\./g, '');
+      if (resultClean.split('Rp').length > 0) {
+        resultClean = resultClean.split('Rp').filter((value: any) => {
+          return value !== 'Rp';
+        }).join('');
+      }
+      resultClean = resultClean.filter((value: string) => {
+        // set logic here
+        return true;
+      });
+      resultClean = typeof resultClean === 'string' ? parseInt(resultClean, null) : resultClean;
+    }
+    if (typeof inputParameter === 'number') {
+      resultClean = Math.floor(inputParameter);
+    }
+    return resultClean;
+  }
 }
 
 export class TypeRupiah {
